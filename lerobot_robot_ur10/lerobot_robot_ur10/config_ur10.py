@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from lerobot.cameras.configs import ColorMode, CameraConfig
 from lerobot.robots import RobotConfig
-from lerobot.cameras.zmq.configuration_zmq import ZMQCameraConfig
+from lerobot.cameras.realsense.configuration_realsense import RealSenseCameraConfig
 
 
 @RobotConfig.register_subclass("ur10")
@@ -21,25 +21,19 @@ class UR10Config(RobotConfig):
 
     cameras: dict[str, CameraConfig] = field(
         default_factory=lambda: {
-            "wrist": ZMQCameraConfig(
-                server_address="127.0.0.1",
-                port=5000,
+            "wrist": RealSenseCameraConfig(
+                serial_number_or_name="923322071837",  # D435I
+                fps=30,
                 width=848,
                 height=480,
-                fps=30,
-                camera_name="wrist",
                 color_mode=ColorMode.RGB,
-                warmup_s=1,
             ),
-            "top": ZMQCameraConfig(
-                server_address="127.0.0.1",
-                port=5001,
-                camera_name="top",
+            "top": RealSenseCameraConfig(
+                serial_number_or_name="204322061013",  # D415
+                fps=30,
                 width=848,
                 height=480,
-                fps=30,
                 color_mode=ColorMode.RGB,
-                warmup_s=1,
             ),
         }
     )
