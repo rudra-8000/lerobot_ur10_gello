@@ -12,7 +12,7 @@ from lerobot.teleoperators.config import TeleoperatorConfig
 @dataclass
 class GelloConfig(TeleoperatorConfig):
     # Port to connect to the arm
-    port: str = "/dev/ttyUSB0"
+    port: str = "/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTAO528D-if00-port0"
     baudrate: int = 57_600
     calibration_position: list[float] = field(default_factory=lambda: [0, -1.57, 1.57, -1.57, -1.57, -1.57])
     joint_signs: list[int] = field(default_factory=lambda: [1, 1, -1, 1, 1, 1])
