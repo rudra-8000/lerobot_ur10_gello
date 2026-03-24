@@ -1,7 +1,7 @@
-"""Direct teleoperation script for UR5e with GELLO.
+"""Direct teleoperation script for UR10 with GELLO.
 
 Provides a simple control loop that reads GELLO teleoperator state and sends
-corresponding joint commands to the UR5e robot arm.
+corresponding joint commands to the UR10 robot arm.
 """
 
 from __future__ import annotations
@@ -20,17 +20,17 @@ from lerobot.utils.import_utils import register_third_party_devices
 from lerobot.utils.utils import init_logging
 
 from lerobot_teleoperator_gello import GelloConfig
-from lerobot_robot_ur5e import UR5EConfig
+from lerobot_robot_ur10 import UR10Config
 
 
 def main() -> None:
     init_logging()
-    logging.info("Starting UR5e ↔︎ GELLO teleoperation example")
+    logging.info("Starting UR10 ↔︎ GELLO teleoperation example")
 
     register_third_party_devices()
 
-    robot_cfg = UR5EConfig(ip="192.168.1.10")
-    teleop_cfg = GelloConfig(port="/dev/ttyUSB0", id="gello_teleop")
+    robot_cfg = UR10Config(ip="192.168.100.3")
+    teleop_cfg = GelloConfig(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U4GA-if00-port0", id="gello_teleop")
 
     teleop = make_teleoperator_from_config(teleop_cfg)
     robot = make_robot_from_config(robot_cfg)
