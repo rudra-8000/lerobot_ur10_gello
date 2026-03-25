@@ -24,14 +24,14 @@ class UR10Config(RobotConfig):
             "wrist": RealSenseCameraConfig(
                 serial_number_or_name="923322071837",  # D435I
                 fps=30,
-                width=848,
+                width=640,
                 height=480,
                 color_mode=ColorMode.RGB,
             ),
             "top": RealSenseCameraConfig(
                 serial_number_or_name="204322061013",  # D415
                 fps=30,
-                width=848,
+                width=640,
                 height=480,
                 color_mode=ColorMode.RGB,
             ),
