@@ -53,7 +53,7 @@ class GelloConfig(TeleoperatorConfig):
     )
 
     # ← fixed to match gello_agent.py
-    joint_signs: list[int] = field(default_factory=lambda: [-1, 1, -1, 1, 1, 1])
+    joint_signs: list[int] = field(default_factory=lambda: [1, 1, -1, 1, 1, 1])
 
     # Gripper Dynamixel ID=7, open=192 ticks, close=150 ticks
     gripper_id: int = 7
@@ -62,7 +62,7 @@ class GelloConfig(TeleoperatorConfig):
     gripper_travel_counts: int = 575
 
     calibration_position: list[float] = field(
-        default_factory=lambda: [0, -1.57, 1.57, -1.57, -1.57, -1.57]
+        default_factory=lambda: [0, -1.57, 1.57, -1.57, -1.57, 1.57]
     )
 
     smoothing: float = 0.85

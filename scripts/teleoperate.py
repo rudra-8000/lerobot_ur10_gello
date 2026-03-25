@@ -1,36 +1,30 @@
-"""Direct teleoperation script for UR10 with GELLO.
-
-Provides a simple control loop that reads GELLO teleoperator state and sends
-corresponding joint commands to the UR10 robot arm.
-"""
+"""Direct teleoperation script for UR10 with GELLO."""
 
 from __future__ import annotations
 
 import logging
 import time
 
-from lerobot.processor import (
-    RobotObservation,
-    make_default_processors,
-)
+from lerobot.processor import RobotObservation, make_default_processors
 from lerobot.robots import make_robot_from_config
 from lerobot.teleoperators import make_teleoperator_from_config
 from lerobot.utils.errors import DeviceNotConnectedError
-from lerobot.utils.import_utils import register_third_party_devices
 from lerobot.utils.utils import init_logging
 
+# Importing these registers them automatically via decorators
 from lerobot_teleoperator_gello import GelloConfig
 from lerobot_robot_ur10 import UR10Config
 
 
 def main() -> None:
     init_logging()
-    logging.info("Starting UR10 ↔︎ GELLO teleoperation example")
-
-    register_third_party_devices()
+    logging.info("Starting UR10 <-> GELLO teleoperation")
 
     robot_cfg = UR10Config(ip="192.168.100.3")
-    teleop_cfg = GelloConfig(port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U4GA-if00-port0", id="gello_teleop")
+    teleop_cfg = GelloConfig(
+        port="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTAO528D-if00-port0",
+        id="gello_teleop",
+    )
 
     teleop = make_teleoperator_from_config(teleop_cfg)
     robot = make_robot_from_config(robot_cfg)
@@ -40,7 +34,7 @@ def main() -> None:
     teleop.connect()
     try:
         robot.connect()
-    except Exception as exc:  # noqa: BLE001 - report but keep running in open-loop
+    except Exception as exc:
         logging.warning("Robot connection failed: %s", exc)
 
     loop_hz = 20
