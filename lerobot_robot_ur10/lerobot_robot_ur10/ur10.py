@@ -146,18 +146,36 @@ class UR10(Robot):
 
     # ── Data I/O ───────────────────────────────────────────────────────────
 
-    def get_observation(self) -> dict[str, Any]:
-        if not self.is_connected:
-            raise DeviceNotConnectedError(f"{self} is not connected.")
+    # def get_observation(self) -> dict[str, Any]:
+    #     if not self.is_connected:
+    #         raise DeviceNotConnectedError(f"{self} is not connected.")
 
-        joint_positions = self.rtde_rec.getActualQ()   # list of 6 floats, radians
-        gripper_pos     = self.gripper.get_pos_normalized()  # [0.0=open, 1.0=closed]
+    #     joint_positions = self.rtde_rec.getActualQ()   # list of 6 floats, radians
+    #     gripper_pos     = self.gripper.get_pos_normalized()  # [0.0=open, 1.0=closed]
+
+    #     obs = {f"joint_{i}": float(v) for i, v in enumerate(joint_positions)}
+    #     obs["gripper"] = float(gripper_pos)
+
+    #     for name, cam in self.cameras.items():
+    #         obs[name] = cam.async_read()
+
+    #     return obs
+
+    ####added new observation function in hopes to improve
+    def get_observation(self) -> dict[str, Any]:
+        joint_positions = self.rtde_rec.getActualQ()
+        gripper_pos     = self.gripper.get_pos_normalized()
 
         obs = {f"joint_{i}": float(v) for i, v in enumerate(joint_positions)}
         obs["gripper"] = float(gripper_pos)
 
         for name, cam in self.cameras.items():
-            obs[name] = cam.async_read()
+            # Bypass new_frame_event — just grab latest buffered frame without waiting
+            with cam.frame_lock:
+                frame = cam.latest_color_frame
+            if frame is None:
+                raise RuntimeError(f"Camera {name} has no frame yet — not warmed up?")
+            obs[name] = frame.copy()
 
         return obs
 
