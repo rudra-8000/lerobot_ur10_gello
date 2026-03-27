@@ -66,7 +66,8 @@ from lerobot.utils.control_utils import (
     sanity_check_dataset_robot_compatibility,
 )
 from lerobot.utils.import_utils import register_third_party_devices
-from lerobot.utils.robot_utils import busy_wait
+# from lerobot.utils.robot_utils import busy_wait
+from lerobot.utils.control_utils import busy_wait
 from lerobot.utils.utils import (
     get_safe_torch_device,
     init_logging,

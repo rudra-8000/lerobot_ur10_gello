@@ -38,7 +38,9 @@ from lerobot.utils.control_utils import (
     sanity_check_dataset_name,
     sanity_check_dataset_robot_compatibility,
 )
-from lerobot.utils.robot_utils import busy_wait
+# from lerobot.utils.robot_utils import busy_wait
+# from lerobot.utils.control_utils import busy_wait
+
 from lerobot.utils.utils import init_logging, log_say
 
 from lerobot_robot_ur10 import UR10Config
@@ -81,7 +83,10 @@ def record_loop(
 
         dt = time.perf_counter() - loop_t
         if dt < 1 / fps:
-            busy_wait(1 / fps - dt)
+            # busy_wait(1 / fps - dt)
+            remaining = 1 / fps - dt
+            if remaining > 0:
+                time.sleep(remaining)
         elif dt > 2.5 / fps:
             logger.warning(f"Slow loop: {dt:.3f}s (target {1/fps:.3f}s)")
 
@@ -134,7 +139,8 @@ def main(
         dataset.start_image_writer(num_processes=num_image_writer_processes, num_threads=num_threads)
         sanity_check_dataset_robot_compatibility(dataset, robot, fps, dataset_features)
     else:
-        sanity_check_dataset_name(repo_id, policy=None)
+        sanity_check_dataset_name(repo_id, policy_cfg=None)
+        # sanity_check_dataset_name(repo_id)
         dataset = LeRobotDataset.create(
             repo_id, fps, root=root, robot_type=robot.name,
             features=dataset_features, use_videos=video,

@@ -27,6 +27,7 @@ class UR10Config(RobotConfig):
                 width=640,
                 height=480,
                 color_mode=ColorMode.RGB,
+                warmup_s=2.0,
             ),
             "top": RealSenseCameraConfig(
                 serial_number_or_name="204322061013",  # D415
@@ -34,6 +35,7 @@ class UR10Config(RobotConfig):
                 width=640,
                 height=480,
                 color_mode=ColorMode.RGB,
+                warmup_s=2.0,
             ),
         }
     )
