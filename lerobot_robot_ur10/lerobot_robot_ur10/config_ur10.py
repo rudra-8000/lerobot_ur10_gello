@@ -16,8 +16,9 @@ class UR10Config(RobotConfig):
     gripper_dxl_id: int = 0
     gripper_open_angle: float  = 285.0
     gripper_close_angle: float = 166.0
-    gripper_default_speed: float  = 0.8
-    gripper_default_torque: float = 0.5
+    gripper_default_speed: float  = 1.0
+    # gripper_default_torque: float = 0.5
+    gripper_default_torque: float = 0.4
 
     cameras: dict[str, CameraConfig] = field(
         default_factory=lambda: {
@@ -29,13 +30,13 @@ class UR10Config(RobotConfig):
                 color_mode=ColorMode.RGB,
                 warmup_s=2.0,
             ),
-            "top": RealSenseCameraConfig(
-                serial_number_or_name="204322061013",  # D415
-                fps=30,
-                width=640,
-                height=480,
-                color_mode=ColorMode.RGB,
-                warmup_s=2.0,
-            ),
+            # "top": RealSenseCameraConfig(
+            #     serial_number_or_name="204322061013",  # D415
+            #     fps=30,
+            #     width=640,
+            #     height=480,
+            #     color_mode=ColorMode.RGB,
+            #     warmup_s=2.0,
+            # ),
         }
     )

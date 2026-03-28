@@ -1355,24 +1355,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "lerobot-camera-zmq"
+name = "lerobot-robot-ur10"
 version = "0.1.0"
-source = { editable = "lerobot_camera_zmq" }
-dependencies = [
-    { name = "lerobot" },
-    { name = "pyzmq" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "lerobot" },
-    { name = "pyzmq", specifier = ">=27.1.0" },
-]
-
-[[package]]
-name = "lerobot-robot-ur5e"
-version = "0.1.0"
-source = { editable = "lerobot_robot_ur5e" }
+source = { editable = "lerobot_robot_ur10" }
 dependencies = [
     { name = "lerobot" },
     { name = "ur-rtde" },
@@ -1400,14 +1385,13 @@ requires-dist = [
 ]
 
 [[package]]
-name = "lerobot-ur5e-gello-dev-env"
+name = "lerobot-ur10-gello-dev-env"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "ipykernel" },
     { name = "lerobot" },
-    { name = "lerobot-camera-zmq" },
-    { name = "lerobot-robot-ur5e" },
+    { name = "lerobot-robot-ur10" },
     { name = "lerobot-teleoperator-gello" },
     { name = "matplotlib" },
     { name = "msgpack" },
@@ -1427,8 +1411,7 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'" },
     { name = "ipykernel", specifier = ">=7.1.0" },
     { name = "lerobot", git = "https://github.com/F-Fer/lerobot_fix_batch_encoding?rev=fix%2Fvideo-batch-encoding" },
-    { name = "lerobot-camera-zmq", editable = "lerobot_camera_zmq" },
-    { name = "lerobot-robot-ur5e", editable = "lerobot_robot_ur5e" },
+    { name = "lerobot-robot-ur10", editable = "lerobot_robot_ur10" },
     { name = "lerobot-teleoperator-gello", editable = "lerobot_teleoperator_gello" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "msgpack", specifier = ">=1.0.5" },

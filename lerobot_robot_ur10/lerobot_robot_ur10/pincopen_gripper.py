@@ -223,6 +223,31 @@ class GripperController:
         angle = self.open_angle - value * (self.open_angle - self.close_angle)
         return self.move(angle, speed=speed, torque=torque)
 
+    # pincopen_gripper.py — add this method
+    def set_pos_normalized_async(self, value: float, speed: float = None, torque: float = None) -> bool:
+        """
+        Non-blocking move — writes goal position and returns immediately.
+        Use this during teleoperation. Never calls _wait_motion().
+        """
+        if not self._connected:
+            return False
+
+        value  = max(0.0, min(1.0, value))
+        angle  = self.open_angle - value * (self.open_angle - self.close_angle)
+        speed  = self.default_speed  if speed  is None else max(0.01, min(1.0, speed))
+        torque = self.default_torque if torque is None else max(0.01, min(1.0, torque))
+
+        lo, hi = min(self.open_angle, self.close_angle), max(self.open_angle, self.close_angle)
+        angle  = max(lo, min(hi, angle))
+
+        goal_ticks   = _deg_to_ticks(angle)
+        profile_vel  = max(1, int(round(speed * MAX_PROFILE_VEL)))
+        goal_current = max(1, min(MAX_CURRENT_UNITS, int(round(torque * MAX_CURRENT_UNITS))))
+
+        self._w4(ADDR_PROFILE_VEL,  profile_vel,  "profile vel")
+        self._w2(ADDR_GOAL_CURRENT, goal_current, "goal current")
+        self._w4(ADDR_GOAL_POSITION, goal_ticks,  "goal pos")
+        return True
     # ── Convenience ────────────────────────────────────────────────────────
 
     def open(self, speed=None, torque=None):

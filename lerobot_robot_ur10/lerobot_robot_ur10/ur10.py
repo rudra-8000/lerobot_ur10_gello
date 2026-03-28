@@ -207,7 +207,8 @@ class UR10(Robot):
 
         if (delta >= self._gripper_min_delta and
                 now - self._last_gripper_cmd_time >= self._gripper_min_period_s):
-            self.gripper.set_pos_normalized(gripper_cmd)
+            # self.gripper.set_pos_normalized(gripper_cmd)
+            self.gripper.set_pos_normalized_async(gripper_cmd)
             self._last_gripper_cmd      = gripper_cmd
             self._last_gripper_cmd_time = now
 
