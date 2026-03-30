@@ -13,12 +13,12 @@ from lerobot.scripts.lerobot_calibrate import CalibrateConfig, calibrate
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Calibrate the GELLO teleoperator")
-    parser.add_argument("--port", required=True, help="Serial device path for the Dynamixel bus")
+    parser.add_argument("--port", default="/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTAO528D-if00-port0", help="Serial device path for the Dynamixel bus")
     parser.add_argument("--id", default="gello_teleop", help="Identifier saved with the calibration")
     parser.add_argument(
         "--calibration-dir",
         type=Path,
-        default=None,
+        default=Path("/mnt/robot/rudra/lerobot_ur10_gello/lerobot_teleoperator_gello/lerobot_teleoperator_gello/calibration_data"),
         help="Optional directory where calibration data should be stored",
     )
     return parser.parse_args()

@@ -71,7 +71,6 @@ class Gello(Teleoperator):
     @property
     def is_connected(self) -> bool:
         return self.bus.is_connected
-
     def connect(self, calibrate: bool = True) -> None:
         if self.is_connected:
             raise DeviceAlreadyConnectedError(f"{self} already connected")
@@ -81,21 +80,46 @@ class Gello(Teleoperator):
         self.bus._handshake()
         self.bus._assert_motors_exist()
         self._load_calibration()
+
         if not self.is_calibrated and calibrate:
-            logger.info(
-                "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
-            )
+            logger.info("No calibration found, running calibration...")
             self.calibrate()
 
         self.configure()
 
         if self.config.use_async:
-            # Initial read to populate latest_action
-            raw_action = self.bus.sync_read("Present_Position", normalize=False)
-            self.latest_action = self._process_action(raw_action)
+            if self.is_calibrated:  # ← only do initial read if we have calibration
+                raw_action = self.bus.sync_read("Present_Position", normalize=False)
+                self.latest_action = self._process_action(raw_action)
+            # else: latest_action stays None, _read_loop will populate it after calibrate() sets self.calibration
             self._start_read_thread()
 
         logger.info(f"{self} connected.")
+
+    # def connect(self, calibrate: bool = True) -> None:
+    #     if self.is_connected:
+    #         raise DeviceAlreadyConnectedError(f"{self} already connected")
+
+    #     self.bus.connect(handshake=False)
+    #     self.bus.set_baudrate(self.config.baudrate)
+    #     self.bus._handshake()
+    #     self.bus._assert_motors_exist()
+    #     self._load_calibration()
+    #     if not self.is_calibrated and calibrate:
+    #         logger.info(
+    #             "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
+    #         )
+    #         self.calibrate()
+
+    #     self.configure()
+
+    #     if self.config.use_async:
+    #         # Initial read to populate latest_action
+    #         raw_action = self.bus.sync_read("Present_Position", normalize=False)
+    #         self.latest_action = self._process_action(raw_action)
+    #         self._start_read_thread()
+
+    #     logger.info(f"{self} connected.")
 
     @property
     def is_calibrated(self) -> bool:
@@ -161,13 +185,17 @@ class Gello(Teleoperator):
             result[motor] = angle_rad
         result["gripper"] = (raw_action["gripper"] - self.calibration.gripper_open_position) / (self.calibration.gripper_closed_position - self.calibration.gripper_open_position)
         return result
-
+        
     def _read_loop(self) -> None:
         if self.stop_event is None:
             raise RuntimeError(f"{self}: stop_event is not initialized before starting read loop.")
 
         while not self.stop_event.is_set():
             try:
+                if self.calibration is None:  # ← skip until calibrated
+                    time.sleep(0.1)
+                    continue
+
                 raw_action = self.bus.sync_read("Present_Position", normalize=False)
                 new_action = self._process_action(raw_action)
 
@@ -175,13 +203,33 @@ class Gello(Teleoperator):
                     if self.latest_action is None:
                         self.latest_action = new_action
                     else:
-                        # Apply EMA smoothing
                         alpha = self.config.smoothing
                         for k, v in new_action.items():
                             self.latest_action[k] = alpha * v + (1 - alpha) * self.latest_action[k]
 
             except Exception:
                 time.sleep(0.1)
+
+    # def _read_loop(self) -> None:
+    #     if self.stop_event is None:
+    #         raise RuntimeError(f"{self}: stop_event is not initialized before starting read loop.")
+
+    #     while not self.stop_event.is_set():
+    #         try:
+    #             raw_action = self.bus.sync_read("Present_Position", normalize=False)
+    #             new_action = self._process_action(raw_action)
+
+    #             with self.lock:
+    #                 if self.latest_action is None:
+    #                     self.latest_action = new_action
+    #                 else:
+    #                     # Apply EMA smoothing
+    #                     alpha = self.config.smoothing
+    #                     for k, v in new_action.items():
+    #                         self.latest_action[k] = alpha * v + (1 - alpha) * self.latest_action[k]
+
+    #         except Exception:
+    #             time.sleep(0.1)
 
     def _start_read_thread(self) -> None:
         if self.thread is not None and self.thread.is_alive():
@@ -243,10 +291,28 @@ class Gello(Teleoperator):
     def _load_calibration(self, fpath: Path | None = None) -> None:
         if fpath is None:
             fpath = self.calibration_fpath
-        if fpath.is_file():
-            with open(fpath, "r") as f:
-                self.calibration = GelloCalibration(**json.load(f))
-            logger.info(f"Calibration loaded from {fpath}")
+        if fpath.is_file() and fpath.stat().st_size > 0:  # ← add size check
+            try:
+                with open(fpath, "r") as f:
+                    self.calibration = GelloCalibration(**json.load(f))
+                logger.info(f"Calibration loaded from {fpath}")
+            except (json.JSONDecodeError, TypeError) as e:
+                logger.warning(f"Corrupted calibration file at {fpath}: {e} — treating as uncalibrated")
+                self.calibration = None
         else:
-            logger.info(f"No calibration file found at {fpath}")
+            if fpath.is_file():
+                logger.warning(f"Empty calibration file at {fpath} — treating as uncalibrated")
+            else:
+                logger.info(f"No calibration file found at {fpath}")
             self.calibration = None
+    
+    # def _load_calibration(self, fpath: Path | None = None) -> None:
+    #     if fpath is None:
+    #         fpath = self.calibration_fpath
+    #     if fpath.is_file():
+    #         with open(fpath, "r") as f:
+    #             self.calibration = GelloCalibration(**json.load(f))
+    #         logger.info(f"Calibration loaded from {fpath}")
+    #     else:
+    #         logger.info(f"No calibration file found at {fpath}")
+    #         self.calibration = None
