@@ -35,18 +35,18 @@ class UR10(Robot):
         self.rtde_rec:  Optional[rtde_receive.RTDEReceiveInterface]  = None
 
         # servoJ parameters — CB3 runs at 125 Hz so t=0.008 matches the controller cycle
-        self.acc               = 0.5
-        self.speed             = 0.5
+        self.acc               = 0.9
+        self.speed             = 0.9
         self.servoj_t          = 1.0 / 125   # 8 ms — matches CB3 controller frequency
         self.servoj_lookahead  = 0.1          # seconds, range [0.03, 0.2]
-        self.servoj_gain       = 300          # range [100, 2000]
+        self.servoj_gain       = 500          # range [100, 2000]
 
         # Gripper throttling — GripperController.move() is blocking (waits for
         # motion to finish), so we only send a new command when the target
         # changes meaningfully or enough time has passed.
         self._last_gripper_cmd: float = -1.0   # last normalized value sent
         self._gripper_min_delta: float = 0.02  # minimum change before resending
-        self._gripper_min_period_s: float = 0.1
+        self._gripper_min_period_s: float = 0.1  
 
         self._last_gripper_cmd_time: float = 0.0
 

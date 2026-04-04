@@ -61,6 +61,11 @@ def record_loop(
     timestamp = 0.0
     start_t = time.perf_counter()
 
+    frame_count = 0
+    _fps_window_start = time.perf_counter()
+    _fps_window_frames = 0
+    _fps_log_interval = 1.0
+
     while timestamp < control_time_s:
         loop_t = time.perf_counter()
 
@@ -81,6 +86,22 @@ def record_loop(
             act_frame = build_dataset_frame(dataset.features, teleop_action, prefix=ACTION)
             dataset.add_frame({**obs_frame, **act_frame, "task": single_task})
 
+        # Always count frames for FPS reporting (even during reset/no-save loops)
+        frame_count += 1
+        _fps_window_frames += 1
+
+        now = time.perf_counter()
+        elapsed_window = now - _fps_window_start
+        if elapsed_window >= _fps_log_interval:
+            achieved_fps = _fps_window_frames / elapsed_window
+            total_elapsed = now - start_t
+            logger.info(
+                f"  FPS: {achieved_fps:.1f} (target {fps}) | "
+                f"frames: {frame_count} | elapsed: {total_elapsed:.1f}s"
+            )
+            _fps_window_start = now
+            _fps_window_frames = 0
+
         dt = time.perf_counter() - loop_t
         if dt < 1 / fps:
             # busy_wait(1 / fps - dt)
@@ -91,6 +112,13 @@ def record_loop(
             logger.warning(f"Slow loop: {dt:.3f}s (target {1/fps:.3f}s)")
 
         timestamp = time.perf_counter() - start_t
+    total_s = time.perf_counter() - start_t
+    if total_s > 0 and frame_count > 0:
+        avg_fps = frame_count / total_s
+        logger.info(
+            f"  Loop complete — avg FPS: {avg_fps:.1f} | "
+            f"total frames: {frame_count} | duration: {total_s:.1f}s"
+        )
 
 
 def main(
@@ -158,7 +186,9 @@ def main(
     try:
         with VideoEncodingManager(dataset):
             recorded = 0
+            
             while recorded < num_episodes and not events["stop_recording"]:
+                logger.info(f"Target FPS: {fps} | FPS reported every 5s")
                 logger.info(f"--- Episode {dataset.num_episodes + 1} / {num_episodes} ---")
 
                 record_loop(
